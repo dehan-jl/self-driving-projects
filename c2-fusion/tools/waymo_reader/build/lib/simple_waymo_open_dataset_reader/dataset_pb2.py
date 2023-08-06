@@ -13,7 +13,13 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from simple_waymo_open_dataset_reader import label_pb2 as simple__waymo__open__dataset__reader_dot_label__pb2
+# add project directory to python path to enable relative imports
+import os
+PACKAGE_PARENT = '..'
+SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
+sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
+
+from tools.waymo_reader.simple_waymo_open_dataset_reader import label_pb2 as simple__waymo__open__dataset__reader_dot_label__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(

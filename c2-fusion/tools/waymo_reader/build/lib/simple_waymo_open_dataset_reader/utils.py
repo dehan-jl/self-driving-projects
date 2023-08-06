@@ -14,10 +14,20 @@
 # ==============================================================================
 
 import numpy as np
-from simple_waymo_open_dataset_reader import dataset_pb2, label_pb2
 import zlib
 import math
 import io
+
+# add project directory to python path to enable relative imports
+import os
+import sys
+PACKAGE_PARENT = '..'
+SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
+sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
+
+# from simple_waymo_open_dataset_reader import dataset_pb2, label_pb2
+from tools.waymo_reader.simple_waymo_open_dataset_reader import dataset_pb2, label_pb2
+
 
 
 def get_box_transformation_matrix(box):
@@ -117,16 +127,16 @@ def draw_3d_box(img, vehicle_to_image, label, colour=(255,128,128), draw_2d_boun
         x1,y1,x2,y2 = compute_2d_bounding_box(img.shape, vertices)
 
         if (x1 != x2 and y1 != y2):
-            cv2.rectangle(img, (x1,y1), (x2,y2), colour, thickness = 1)
+            cv2.rectangle(img, (x1,y1), (x2,y2), colour, thickness = 2)
     else:
         # Draw the edges of the 3D bounding box
         for k in [0, 1]:
             for l in [0, 1]:
                 for idx1,idx2 in [((0,k,l),(1,k,l)), ((k,0,l),(k,1,l)), ((k,l,0),(k,l,1))]:
-                    cv2.line(img, tuple(vertices[idx1]), tuple(vertices[idx2]), colour, thickness=1)
+                    cv2.line(img, tuple(vertices[idx1]), tuple(vertices[idx2]), colour, thickness=2)
         # Draw a cross on the front face to identify front & back.
         for idx1,idx2 in [((1,0,0),(1,1,1)), ((1,1,0),(1,0,1))]:
-            cv2.line(img, tuple(vertices[idx1]), tuple(vertices[idx2]), colour, thickness=1)
+            cv2.line(img, tuple(vertices[idx1]), tuple(vertices[idx2]), colour, thickness=2)
 
 def draw_2d_box(img, label, colour=(255,128,128)):
     """Draw a 2D bounding from a given 2D label on a given "img".
@@ -181,38 +191,6 @@ def get_image_transform(camera_calibration):
     vehicle_to_image = np.matmul(camera_model, np.matmul(axes_transformation, np.linalg.inv(extrinsic)))
     return vehicle_to_image
 
-def get_rotation_matrix(roll, pitch, yaw):
-    """ Convert Euler angles to a rotation matrix"""
-
-    cos_roll = np.cos(roll)
-    sin_roll = np.sin(roll)
-    cos_yaw = np.cos(yaw)
-    sin_yaw = np.sin(yaw)
-    cos_pitch = np.cos(pitch)
-    sin_pitch = np.sin(pitch)
-
-    ones = np.ones_like(yaw)
-    zeros = np.zeros_like(yaw)
-
-    r_roll = np.stack([
-        [ones,  zeros,     zeros],
-        [zeros, cos_roll, -sin_roll],
-        [zeros, sin_roll,  cos_roll]])
-
-    r_pitch = np.stack([
-        [ cos_pitch, zeros, sin_pitch],
-        [ zeros,     ones,  zeros],
-        [-sin_pitch, zeros, cos_pitch]])
-
-    r_yaw = np.stack([
-        [cos_yaw, -sin_yaw, zeros],
-        [sin_yaw,  cos_yaw, zeros],
-        [zeros,    zeros,   ones]])
-
-    pose = np.einsum('ijhw,jkhw,klhw->ilhw',r_yaw,r_pitch,r_roll)
-    pose = pose.transpose(2,3,0,1)
-    return pose
-
 def parse_range_image_and_camera_projection(laser, second_response=False):
     """ Parse the range image for a given laser.
 
@@ -257,90 +235,6 @@ def parse_range_image_and_camera_projection(laser, second_response=False):
             camera_projection = np.array(camera_projection.data).reshape(camera_projection.shape.dims)
 
     return ri, camera_projection, range_image_pose
-
-def compute_beam_inclinations(calibration, height):
-    """ Compute the inclination angle for each beam in a range image. """
-
-    if len(calibration.beam_inclinations) > 0:
-        return np.array(calibration.beam_inclinations)
-    else:
-        inclination_min = calibration.beam_inclination_min
-        inclination_max = calibration.beam_inclination_max
-
-        return np.linspace(inclination_min, inclination_max, height)
-
-def compute_range_image_polar(range_image, extrinsic, inclination):
-    """ Convert a range image to polar coordinates. """
-
-    height = range_image.shape[0]
-    width = range_image.shape[1]
-
-    az_correction = math.atan2(extrinsic[1,0], extrinsic[0,0])
-    azimuth = np.linspace(np.pi,-np.pi,width) - az_correction
-
-    azimuth_tiled = np.broadcast_to(azimuth[np.newaxis,:], (height,width))
-    inclination_tiled = np.broadcast_to(inclination[:,np.newaxis],(height,width))
-
-    return np.stack((azimuth_tiled,inclination_tiled,range_image))
-
-def compute_range_image_cartesian(range_image_polar, extrinsic, pixel_pose, frame_pose):
-    """ Convert polar coordinates to cartesian coordinates. """
-
-    azimuth = range_image_polar[0]
-    inclination = range_image_polar[1]
-    range_image_range = range_image_polar[2]
-
-    cos_azimuth = np.cos(azimuth)
-    sin_azimuth = np.sin(azimuth)
-    cos_incl = np.cos(inclination)
-    sin_incl = np.sin(inclination)
-
-    x = cos_azimuth * cos_incl * range_image_range
-    y = sin_azimuth * cos_incl * range_image_range
-    z = sin_incl * range_image_range
-
-    range_image_points = np.stack([x,y,z,np.ones_like(z)])
-
-    range_image_points = np.einsum('ij,jkl->ikl', extrinsic,range_image_points)
-
-    # TODO: Use the pixel_pose matrix. It seems that the bottom part of the pixel pose
-    #       matrix is missing. Not sure if this is a bug in the dataset.
-
-    #if pixel_pose is not None:
-    #    range_image_points = np.einsum('hwij,jhw->ihw', pixel_pose, range_image_points)
-    #    frame_pos_inv = np.linalg.inv(frame_pose)
-    #    range_image_points = np.einsum('ij,jhw->ihw',frame_pos_inv,range_image_points)
-
-        
-    return range_image_points
-
-
-def project_to_pointcloud(frame, ri, camera_projection, range_image_pose, calibration):
-    """ Create a pointcloud in vehicle space from LIDAR range image. """
-    beam_inclinations = compute_beam_inclinations(calibration, ri.shape[0])
-    beam_inclinations = np.flip(beam_inclinations)
-
-    extrinsic = np.array(calibration.extrinsic.transform).reshape(4,4)
-    frame_pose = np.array(frame.pose.transform).reshape(4,4)
-
-    ri_polar = compute_range_image_polar(ri[:,:,0], extrinsic, beam_inclinations)
-
-    if range_image_pose is None:
-        pixel_pose = None
-    else:
-        pixel_pose = get_rotation_matrix(range_image_pose[:,:,0], range_image_pose[:,:,1], range_image_pose[:,:,2])
-        translation = range_image_pose[:,:,3:]
-        pixel_pose = np.block([
-            [pixel_pose, translation[:,:,:,np.newaxis]],
-            [np.zeros_like(translation)[:,:,np.newaxis],np.ones_like(translation[:,:,0])[:,:,np.newaxis,np.newaxis]]])
-
-
-    ri_cartesian = compute_range_image_cartesian(ri_polar, extrinsic, pixel_pose, frame_pose)
-    ri_cartesian = ri_cartesian.transpose(1,2,0)
-
-    mask = ri[:,:,0] > 0
-
-    return ri_cartesian[mask,:3], ri[mask]
 
 
 def get(object_list, name):
