@@ -53,7 +53,7 @@ import misc.params as params
 data_filename = "training_segment-1005081002024129653_5313_150_5333_150_with_camera_labels.tfrecord"  # Sequence 1
 # data_filename = 'training_segment-10072231702153043603_5725_000_5745_000_with_camera_labels.tfrecord' # Sequence 2
 # data_filename = 'training_segment-10963653239323173269_1924_000_1944_000_with_camera_labels.tfrecord' # Sequence 3
-show_only_frames = [0, 200]  # show only frames in interval for debugging
+show_only_frames = [0, 1]  # show only frames in interval for debugging
 
 ## Prepare Waymo Open Dataset file for loading
 data_fullpath = os.path.join(
@@ -94,7 +94,7 @@ exec_detection = [
 exec_tracking = []
 
 # options are 'show_range_image', 'show_bev', 'show_pcl', 'show_labels_in_image', 'show_objects_and_labels_in_bev', 'show_objects_in_bev_labels_in_camera', 'show_tracks', 'show_detection_performance', 'make_tracking_movie'
-exec_visualization = ["show_objects_and_labels_in_bev"]
+exec_visualization = ["show_range_image"]
 
 exec_list = make_exec_list(exec_detection, exec_tracking, exec_visualization)
 vis_pause_time = 0  # set pause time between frames in ms (0 = stop between frames until key is pressed)
