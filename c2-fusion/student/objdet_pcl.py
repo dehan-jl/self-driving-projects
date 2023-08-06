@@ -11,6 +11,8 @@
 #
 
 # general package imports
+import math
+import open3d as o3d
 import cv2
 import numpy as np
 import torch
@@ -32,24 +34,47 @@ from tools.waymo_reader.simple_waymo_open_dataset_reader import dataset_pb2, lab
 import misc.objdet_tools as tools
 
 
+# load a range image
+def load_range_image(frame, lidar_name):
+    # extract lidar data and range image for the specified radar
+    lidar = [obj for obj in frame.lasers if obj.name == lidar_name][0]
+    ri = []
+    if len(lidar.ri_return1.range_image_compressed) > 0:
+        ri = dataset_pb2.MatrixFloat()
+        ri.ParseFromString(zlib.decompress(lidar.ri_return1.range_image_compressed))
+        ri = np.array(ri.data).reshape(ri.shape.dims)
+    return ri
+
+
 # visualize lidar point-cloud
-def show_pcl(pcl):
+def show_pcl(pcl: np.ndarray):
     ####### ID_S1_EX2 START #######
     #######
     print("student task ID_S1_EX2")
 
     # step 1 : initialize open3d with key callback and create window
+    vis = o3d.visualization.VisualizerWithKeyCallback()
+    vis.register_key_callback(262, vis_callback)
+    vis.create_window()
 
     # step 2 : create instance of open3d point-cloud class
+    pcd = o3d.geometry.PointCloud()
 
     # step 3 : set points in pcd instance by converting the point-cloud into 3d vectors (using open3d function Vector3dVector)
+    pcd.points = o3d.utility.Vector3dVector(pcl[:, :3])  # remove intensity channel
 
     # step 4 : for the first frame, add the pcd instance to visualization using add_geometry; for all other frames, use update_geometry instead
+    vis.add_geometry(pcd)
 
     # step 5 : visualize point cloud and keep window open until right-arrow is pressed (key-code 262)
+    vis.run()
 
     #######
     ####### ID_S1_EX2 END #######
+
+
+def vis_callback(vis):
+    vis.close()
 
 
 # visualize range image
@@ -59,12 +84,7 @@ def show_range_image(frame, lidar_name):
     print("student task ID_S1_EX1")
 
     # step 1 : extract lidar data and range image for the roof-mounted lidar
-    lidar = [obj for obj in frame.lasers if obj.name == lidar_name][0]
-    ri = []
-    if len(lidar.ri_return1.range_image_compressed) > 0:
-        ri = dataset_pb2.MatrixFloat()
-        ri.ParseFromString(zlib.decompress(lidar.ri_return1.range_image_compressed))
-        ri = np.array(ri.data).reshape(ri.shape.dims)
+    ri = load_range_image(frame, lidar_name)
 
     # step 2 : extract the range and the intensity channel from the range image
     ri_range = ri[:, :, 0]
