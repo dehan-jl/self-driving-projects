@@ -1,0 +1,16 @@
+# VScode Nonsense
+.vscode
+
+# Mac Crap
+.DS_Store
+
+# Python poop
+__pycache__
+**/*venv/
+*.egg
+
+# Large Data Blobs
+**/data/*
+**/dataset/*
+**/results/*
+**/*.tfrecord
