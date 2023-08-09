@@ -215,7 +215,7 @@ def detect_objects(input_bev_maps, model, configs):
             )
             detections = detections.cpu().numpy().astype(np.float32)
 
-            detections = post_processing(detections, configs)
+            detections = post_processing(detections, configs)[0][1]  # 1 because class 1 is vehicles
 
             #######
             ####### ID_S3_EX1-5 END #######
@@ -227,14 +227,29 @@ def detect_objects(input_bev_maps, model, configs):
     objects = []
 
     ## step 1 : check whether there are any detections
+    if len(detections) == 0:
+        return objects
 
     ## step 2 : loop over all detections
+    lim_x_range = configs.lim_x[1] - configs.lim_x[0]
+    lim_y_range = configs.lim_y[1] - configs.lim_y[0]
+    for detect in detections:
+        _score, _x, _y, z, h, _w, _l, yaw = detect
 
-    ## step 3 : perform the conversion using the limits for x, y and z set in the configs structure
+        ## step 3 : perform the conversion using the limits for x, y and z set in the configs structure
+        x = _y / configs.bev_height * lim_x_range
+        y = (_x / configs.bev_width * lim_y_range) - (lim_y_range / 2)
+        w = _w / configs.bev_width * lim_y_range
+        l = _l / configs.bev_height * lim_x_range
 
-    ## step 4 : append the current object to the 'objects' array
+        if (
+            (configs.lim_x[0] <= x <= configs.lim_x[1])
+            and (configs.lim_y[0] <= y <= configs.lim_y[1])
+            and (configs.lim_z[0] <= z <= configs.lim_y[1])
+        ):
+            objects.append([1, x, y, z, h, w, l, yaw])  # step 4 : append the current object to the 'objects' array
 
     #######
-    ####### ID_S3_EX2 START #######
+    ####### ID_S3_EX2 END #######
 
     return objects
