@@ -176,14 +176,15 @@ def bev_from_pcl(lidar_pcl, configs, vis=False):
 
     lidar_pcl_top[lidar_pcl_top[:, 3] > 1.0, 3] = 1.0  # clip intensity values > 1.0
     # note: here I do all the scaling and normalization in one step
-    intensity_map[np.int_(lidar_pcl_top[:, 0]), np.int_(lidar_pcl_top[:, 1])] = (
-        lidar_pcl_top[:, 3] / (np.max(lidar_pcl_top[:, 3]) - np.min(lidar_pcl_top[:, 3])) * 255
+    intensity_map[np.int_(lidar_pcl_top[:, 0]), np.int_(lidar_pcl_top[:, 1])] = lidar_pcl_top[:, 3] / (
+        np.max(lidar_pcl_top[:, 3]) - np.min(lidar_pcl_top[:, 3])
     )
 
     # step 5 : temporarily visualize the intensity map using OpenCV to make sure that vehicles separate well from the background
     if vis:
-        intensity_map = intensity_map.astype(np.uint8)
-        cv2.imshow("intensity_map", intensity_map)
+        img_intensity = intensity_map * 255
+        img_intensity = img_intensity.astype(np.uint8)
+        cv2.imshow("intensity_map", img_intensity)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
@@ -203,14 +204,15 @@ def bev_from_pcl(lidar_pcl, configs, vis=False):
     ##          use the lidar_pcl_top data structure from the previous task to access the pixels of the height_map
 
     # again, scaling in one step
-    height_map[np.int_(lidar_pcl_top[:, 0]), np.int_(lidar_pcl_top[:, 1])] = (
-        lidar_pcl_top[:, 2] / float(np.abs((configs.lim_z[1] - configs.lim_z[0]))) * 255
+    height_map[np.int_(lidar_pcl_top[:, 0]), np.int_(lidar_pcl_top[:, 1])] = lidar_pcl_top[:, 2] / float(
+        np.abs((configs.lim_z[1] - configs.lim_z[0]))
     )
 
     ## step 3 : temporarily visualize the intensity map using OpenCV to make sure that vehicles separate well from the background
     if vis:
-        height_map = height_map.astype(np.uint8)
-        cv2.imshow("height_map", height_map)
+        img_height = height_map * 255
+        img_height = img_height.astype(np.uint8)
+        cv2.imshow("height_map", img_height)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
