@@ -53,7 +53,7 @@ import misc.params as params
 data_filename = "training_segment-1005081002024129653_5313_150_5333_150_with_camera_labels.tfrecord"  # Sequence 1
 # data_filename = 'training_segment-10072231702153043603_5725_000_5745_000_with_camera_labels.tfrecord' # Sequence 2
 # data_filename = 'training_segment-10963653239323173269_1924_000_1944_000_with_camera_labels.tfrecord' # Sequence 3
-show_only_frames = [50, 51]  # show only frames in interval for debugging
+show_only_frames = [0, 1]  # show only frames in interval for debugging
 
 ## Prepare Waymo Open Dataset file for loading
 data_fullpath = os.path.join(
@@ -89,15 +89,15 @@ exec_data = ["pcl_from_rangeimage", "load_image"]
 exec_detection = [
     "bev_from_pcl",
     "detect_objects",
-    # "validate_object_labels",
-    # "measure_detection_performance",
+    "validate_object_labels",
+    "measure_detection_performance",
 ]
 
 # options are 'perform_tracking'
 exec_tracking = []
 
 # options are 'show_range_image', 'show_bev', 'show_pcl', 'show_labels_in_image', 'show_objects_and_labels_in_bev', 'show_objects_in_bev_labels_in_camera', 'show_tracks', 'show_detection_performance', 'make_tracking_movie'
-exec_visualization = ["show_objects_in_bev_labels_in_camera"]
+exec_visualization = ["show_detection_performance"]
 
 exec_list = make_exec_list(exec_detection, exec_tracking, exec_visualization)
 vis_pause_time = 0  # set pause time between frames in ms (0 = stop between frames until key is pressed)
@@ -188,9 +188,7 @@ while True:
         ## Performance evaluation for object detection
         if "measure_detection_performance" in exec_list:
             print("measuring detection performance")
-            det_performance = eval.measure_detection_performance(
-                detections, frame.laser_labels, valid_label_flags, configs_det.min_iou
-            )
+            det_performance = eval.measure_detection_performance(detections, frame.laser_labels, valid_label_flags)
         else:
             print("loading detection performance measures from file")
             if configs_det.use_labels_as_objects is True:
@@ -329,7 +327,7 @@ while True:
 
 ## Evaluate object detection performance
 if "show_detection_performance" in exec_list:
-    eval.compute_performance_stats(det_performance_all, configs_det)
+    eval.compute_performance_stats(det_performance_all)
 
 ## Plot RMSE for all tracks
 if "show_tracks" in exec_list:
