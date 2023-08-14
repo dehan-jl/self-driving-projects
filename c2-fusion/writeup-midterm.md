@@ -13,6 +13,18 @@ The following image shows from segment `1005...`, frame ~92.
 2. Shows a vehicle that is further away, and such less deatils are vissible.
 3. Shows a vehicle that is even further away, and as such only the rear bumper and some other part of the car is visible.
 
+The following image shows from segment `1007...`, frame ~100.
+<img src="img/vehicles_3.png"/>
+
+1. Shows a vehicle in a side road, where the side of the vehicle is clearly visible.
+2. Shows a vehicle that is at the edge of the point cloud, and thus only only the rear of the vehicle is visible.
+
+The following image shows from segment `1096...`, frame ~100.
+<img src="img/vehicles_4.png"/>
+
+1. Shows a van where it is partially obscured by the two vehicle behind it.
+2. Shows a cement truck, with the complex geometry of the truck clearly visible.
+
 # Features
 <img src="img/range_1.png"/>
 <img src="img/range_2.png"/>
