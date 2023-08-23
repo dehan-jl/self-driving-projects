@@ -34,7 +34,7 @@ class Filter:
 
     def F(self):
         ############
-        # TODO Step 1: implement and return system matrix F
+        # Step 1: implement and return system matrix F
         ############
 
         return np.matrix(
@@ -54,7 +54,7 @@ class Filter:
 
     def Q(self):
         ############
-        # TODO Step 1: implement and return process noise covariance Q
+        # Step 1: implement and return process noise covariance Q
         ############
 
         f = lambda p: (1 / p) * np.power(params.dt, p) * params.q
@@ -76,7 +76,7 @@ class Filter:
 
     def predict(self, track: Type[Track]):
         ############
-        # TODO Step 1: predict state x and estimation error covariance P to next timestep, save x and P in track
+        # Step 1: predict state x and estimation error covariance P to next timestep, save x and P in track
         ############
 
         x_plus: np.matrix = track.x
@@ -94,7 +94,7 @@ class Filter:
 
     def update(self, track: Type[Track], meas: Type[Measurement]):
         ############
-        # TODO Step 1: update state x and covariance P with associated measurement, save x and P in track
+        # Step 1: update state x and covariance P with associated measurement, save x and P in track
         ############
 
         gamma = self.gamma(track, meas)
@@ -114,7 +114,7 @@ class Filter:
 
     def gamma(self, track: Type[Track], meas: Type[Measurement]):
         ############
-        # TODO Step 1: calculate and return residual gamma
+        # Step 1: calculate and return residual gamma
         ############
 
         return meas.z - meas.sensor.get_hx(track.x)
@@ -125,7 +125,7 @@ class Filter:
 
     def S(self, track: Type[Track], meas: Type[Measurement], H: np.matrix) -> np.matrix:
         ############
-        # TODO Step 1: calculate and return covariance of residual S
+        # Step 1: calculate and return covariance of residual S
         ############
 
         return H * track.P * H.T + meas.R
