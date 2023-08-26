@@ -12,6 +12,7 @@
 
 # imports
 import numpy as np
+from typing import Type
 
 # add project directory to python path to enable relative imports
 import os
@@ -155,7 +156,7 @@ class Sensor:
 class Measurement:
     """Measurement class including measurement values, covariance, timestamp, sensor"""
 
-    def __init__(self, num_frame, z, sensor):
+    def __init__(self, num_frame, z, sensor: Type[Sensor]):
         # create measurement object
         self.t = (num_frame - 1) * params.dt  # time
         self.sensor = sensor  # sensor that generated this measurement
