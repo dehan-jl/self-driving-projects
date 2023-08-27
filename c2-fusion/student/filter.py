@@ -56,16 +56,18 @@ class Filter:
         # Step 1: implement and return process noise covariance Q
         ############
 
-        f = lambda p: (1 / p) * np.power(params.dt, p) * params.q
+        q_3 = (1 / 3) * np.power(params.dt, 3) * params.q
+        q_2 = (1 / 2) * np.power(params.dt, 2) * params.q
+        q_1 = params.dt * params.q
 
         return np.matrix(
             [
-                [f(3), 0.0, 0.0, f(2), 0.0, 0.0],
-                [0.0, f(3), 0.0, 0.0, f(2), 0.0],
-                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-                [f(2), 0.0, 0.0, f(1), 0.0, 0.0],
-                [0.0, f(2), 0.0, 0.0, f(1), 0.0],
-                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [q_3, 0.0, 0.0, q_2, 0.0, 0.0],
+                [0.0, q_3, 0.0, 0.0, q_2, 0.0],
+                [0.0, 0.0, q_3, 0.0, 0.0, q_2],
+                [q_2, 0.0, 0.0, q_1, 0.0, 0.0],
+                [0.0, q_2, 0.0, 0.0, q_1, 0.0],
+                [0.0, 0.0, q_2, 0.0, 0.0, q_1],
             ]
         )
 
