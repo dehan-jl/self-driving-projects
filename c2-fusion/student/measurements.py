@@ -156,7 +156,7 @@ class Sensor:
 class Measurement:
     """Measurement class including measurement values, covariance, timestamp, sensor"""
 
-    def __init__(self, num_frame, z, sensor: Type[Sensor]):
+    def __init__(self, num_frame, z, sensor: Sensor):
         # create measurement object
         self.t = (num_frame - 1) * params.dt  # time
         self.sensor = sensor  # sensor that generated this measurement

@@ -74,7 +74,7 @@ class Filter:
         # END student code
         ############
 
-    def predict(self, track: Type[Track]):
+    def predict(self, track: Track):
         ############
         # Step 1: predict state x and estimation error covariance P to next timestep, save x and P in track
         ############
@@ -92,7 +92,7 @@ class Filter:
         # END student code
         ############
 
-    def update(self, track: Type[Track], meas: Type[Measurement]):
+    def update(self, track: Track, meas: Measurement):
         ############
         # Step 1: update state x and covariance P with associated measurement, save x and P in track
         ############
@@ -112,7 +112,7 @@ class Filter:
         ############
         track.update_attributes(meas)
 
-    def gamma(self, track: Type[Track], meas: Type[Measurement]):
+    def gamma(self, track: Track, meas: Measurement):
         ############
         # Step 1: calculate and return residual gamma
         ############
@@ -123,7 +123,7 @@ class Filter:
         # END student code
         ############
 
-    def S(self, track: Type[Track], meas: Type[Measurement], H: np.matrix) -> np.matrix:
+    def S(self, track: Track, meas: Measurement, H: np.matrix) -> np.matrix:
         ############
         # Step 1: calculate and return covariance of residual S
         ############

@@ -29,12 +29,12 @@ from student.measurements import Measurement
 class Track:
     """Track class with state, covariance, id, score"""
 
-    def __init__(self, meas: Type[Measurement], id):
+    def __init__(self, meas: Measurement, id):
         print("creating track no.", id)
         M_rot = meas.sensor.sens_to_veh[0:3, 0:3]  # rotation matrix from sensor to vehicle coordinates
 
         ############
-        # TODO Step 2: initialization:
+        # Step 2: initialization:
         # - replace fixed track initialization values by initialization of x and P based on
         # unassigned measurement transformed from sensor to vehicle coordinates
         # - initialize track state and track score with appropriate values
@@ -103,7 +103,7 @@ class Trackmanagement:
 
     def manage_tracks(self, unassigned_tracks, unassigned_meas, meas_list):
         ############
-        # TODO Step 2: implement track management:
+        # Step 2: implement track management:
         # - decrease the track score for unassigned tracks
         # - delete tracks if the score is too low or P is too big (check params.py for parameters that might be helpful, but
         # feel free to define your own parameters)
@@ -151,7 +151,7 @@ class Trackmanagement:
 
     def handle_updated_track(self, track):
         ############
-        # TODO Step 2: implement track management for updated tracks:
+        # Step 2: implement track management for updated tracks:
         # - increase track score
         # - set track state to 'tentative' or 'confirmed'
         ############
