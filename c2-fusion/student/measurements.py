@@ -12,7 +12,6 @@
 
 # imports
 import numpy as np
-from typing import Type
 
 # add project directory to python path to enable relative imports
 import os
@@ -49,14 +48,20 @@ class Sensor:
 
         self.veh_to_sens = np.linalg.inv(self.sens_to_veh)  # transformation vehicle to sensor coordinates
 
-    def in_fov(self, x):
+    def in_fov(self, x_sens):
         # check if an object x can be seen by this sensor
         ############
         # TODO Step 4: implement a function that returns True if x lies in the sensor's field of view,
         # otherwise False.
         ############
 
-        return True
+        x_sens = np.matmul(self.veh_to_sens, np.vstack((x_sens[0:3], [1])))
+        p_x, p_y = x_sens[0, 0], x_sens[1, 0]
+        alpha = np.arctan(p_y / p_x)
+        if self.fov[0] <= alpha <= self.fov[1]:
+            return True
+
+        return False
 
         ############
         # END student code
@@ -78,7 +83,15 @@ class Sensor:
             # - return h(x)
             ############
 
-            pass
+            x_sens = np.matmul(self.veh_to_sens, np.vstack((x[0:3], [1])))
+
+            try:
+                h_1 = self.c_i - self.f_i * x_sens[1, 0] / x_sens[0, 0]
+                h_2 = self.c_j - self.f_j * x_sens[2, 0] / x_sens[0, 0]
+            except ZeroDivisionError:
+                raise NameError("Division by zero!")
+
+            return np.matrix([[h_1], [h_2]])
 
             ############
             # END student code
@@ -140,9 +153,8 @@ class Sensor:
         # TODO Step 4: remove restriction to lidar in order to include camera as well
         ############
 
-        if self.name == "lidar":
-            meas = Measurement(num_frame, z, self)
-            meas_list.append(meas)
+        meas = Measurement(num_frame, z, self)
+        meas_list.append(meas)
         return meas_list
 
         ############
@@ -186,7 +198,22 @@ class Measurement:
             # TODO Step 4: initialize camera measurement including z and R
             ############
 
-            pass
+            params.sigma_cam_i = params.sigma_cam_i
+            params.sigma_cam_j = params.sigma_cam_j
+
+            self.z = np.zeros((sensor.dim_meas, 1))
+            self.z[0] = z[0]
+            self.z[1] = z[1]
+
+            self.R = np.matrix(
+                [
+                    [params.sigma_cam_i**2, 0],
+                    [0, params.sigma_cam_j**2],
+                ]
+            )
+
+            self.width = z[2]
+            self.length = z[3]
 
             ############
             # END student code

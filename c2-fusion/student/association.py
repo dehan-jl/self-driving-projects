@@ -14,7 +14,7 @@
 import itertools
 import numpy as np
 from scipy.stats.distributions import chi2
-from typing import Type, List
+from typing import List
 
 # add project directory to python path to enable relative imports
 import os

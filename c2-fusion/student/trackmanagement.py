@@ -12,12 +12,10 @@
 
 # imports
 import numpy as np
-import collections
 
 # add project directory to python path to enable relative imports
 import os
 import sys
-from typing import Type
 
 PACKAGE_PARENT = ".."
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
@@ -157,11 +155,11 @@ class Trackmanagement:
         ############
 
         track.score += 1.0 / params.window
-        track.score = np.min([track.score, 1.0])
-        if params.tentative_threshold <= track.score < params.confirmed_threshold:
-            track.state = params.state_tent
-        elif params.confirmed_threshold <= track.score:
+        track.score = np.min([track.score, 6.0])  # Clip score so that it doesn't get too big
+        if params.confirmed_threshold <= track.score:
             track.state = params.state_conf
+        elif params.tentative_threshold <= track.score < params.confirmed_threshold:
+            track.state = params.state_tent
 
         ############
         # END student code

@@ -12,7 +12,6 @@
 
 # imports
 import numpy as np
-from typing import Type
 
 # add project directory to python path to enable relative imports
 import os
