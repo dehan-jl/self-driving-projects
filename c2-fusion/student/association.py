@@ -109,7 +109,7 @@ class Association:
         S = KF.S(track, meas, H)
         gamma = KF.gamma(track, meas)
 
-        return (gamma.T * np.linalg.inv(S) * gamma)[0, 0]
+        return np.sqrt((gamma.T * np.linalg.inv(S) * gamma)[0, 0])
 
         ############
         # END student code
