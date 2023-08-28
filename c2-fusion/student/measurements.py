@@ -51,7 +51,7 @@ class Sensor:
     def in_fov(self, x_sens):
         # check if an object x can be seen by this sensor
         ############
-        # TODO Step 4: implement a function that returns True if x lies in the sensor's field of view,
+        # Step 4: implement a function that returns True if x lies in the sensor's field of view,
         # otherwise False.
         ############
 
@@ -76,7 +76,7 @@ class Sensor:
             return pos_sens[0:3]
         elif self.name == "camera":
             ############
-            # TODO Step 4: implement nonlinear camera measurement function h:
+            # Step 4: implement nonlinear camera measurement function h:
             # - transform position estimate from vehicle to camera coordinates
             # - project from camera to image coordinates
             # - make sure to not divide by zero, raise an error if needed
@@ -150,7 +150,7 @@ class Sensor:
     def generate_measurement(self, num_frame, z, meas_list):
         # generate new measurement from this sensor and add to measurement list
         ############
-        # TODO Step 4: remove restriction to lidar in order to include camera as well
+        # Step 4: remove restriction to lidar in order to include camera as well
         ############
 
         meas = Measurement(num_frame, z, self)
@@ -195,7 +195,7 @@ class Measurement:
             self.yaw = z[6]
         elif sensor.name == "camera":
             ############
-            # TODO Step 4: initialize camera measurement including z and R
+            # Step 4: initialize camera measurement including z and R
             ############
 
             params.sigma_cam_i = params.sigma_cam_i
